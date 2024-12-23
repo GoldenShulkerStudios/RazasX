@@ -12,6 +12,7 @@ import me.ewahv1.plugin.Listeners.Atributos.AtributosRazaHumano;
 import me.ewahv1.plugin.Listeners.Atributos.AtributosRazaLeviathan;
 import me.ewahv1.plugin.Listeners.RazaRespawnListener;
 import me.ewahv1.plugin.Listeners.Pergaminos.CarmesiT1;
+import me.ewahv1.plugin.Listeners.Pergaminos.DraconicoT1;
 
 public class Main extends JavaPlugin {
 
@@ -39,6 +40,7 @@ public class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new AtributosRazaHumano(), this);
         getServer().getPluginManager().registerEvents(new AtributosRazaElfo(), this);
         getServer().getPluginManager().registerEvents(new CarmesiT1(this), this);
+        getServer().getPluginManager().registerEvents(new DraconicoT1(this), this);
 
         getLogger().info("Gurumisland plugin activado correctamente.");
     }
