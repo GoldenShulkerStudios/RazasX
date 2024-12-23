@@ -29,10 +29,10 @@ Pergaminos:
       unbreaking: false
       hide_enchants: true
       cooldown: 3 # Segundos
-      range: 2 # Bloques
+      range: 5 # Bloques
       initial_speed: 2.0 # Velocidad inicial
       gravity_force: 0.2 # Gravedad personalizada
-      poder_explosión: 3 # Daño que inflige
+      poder_explosión: 10 # Daño que inflige
       glowing_player_during: 1 #Segundos
 
   Elfo:
