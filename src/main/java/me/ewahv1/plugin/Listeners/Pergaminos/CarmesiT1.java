@@ -100,6 +100,7 @@ public class CarmesiT1 implements Listener {
 
         int glowingDuration = config.getInt("Pergaminos.Carmesi.Tier1.glowing_target_during", 1) * 20; // Convertir a
                                                                                                        // ticks
+        double damage = config.getDouble("Pergaminos.Carmesi.Tier1.damage", 5.0); // Daño configurado
 
         // Agregar al equipo "GlowingRed"
         Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("GlowingRed");
@@ -124,6 +125,11 @@ public class CarmesiT1 implements Listener {
             target.setGlowing(false);
             finalTeam.removeEntry(
                     target instanceof Player ? ((Player) target).getName() : target.getUniqueId().toString());
+
+            // Reducir la salud del objetivo después de que termine el glowing
+            if (target.isValid()) {
+                target.damage(damage);
+            }
 
             // Generar partículas después de que termine el efecto glowing
             generateParticlesToPlayer(target, player);
@@ -185,6 +191,7 @@ public class CarmesiT1 implements Listener {
 
         int glowingPlayerDuration = config.getInt("Pergaminos.Carmesi.Tier1.glowing_player_during", 1) * 20; // Convertir
                                                                                                              // a ticks
+        double heal = config.getDouble("Pergaminos.Carmesi.Tier1.heal", 5.0); // Curación configurada
 
         // Obtener o crear el equipo "GlowingRed"
         Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("GlowingRed");
@@ -199,6 +206,9 @@ public class CarmesiT1 implements Listener {
         // Agregar al jugador al equipo
         finalTeam.addEntry(player.getName());
         player.setGlowing(true);
+
+        // Curar al jugador al iniciar su glowing
+        player.setHealth(Math.min(player.getHealth() + heal, player.getMaxHealth()));
 
         // Programar tarea para eliminar el efecto glowing después del tiempo
         // especificado
