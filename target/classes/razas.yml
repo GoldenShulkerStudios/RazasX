@@ -1,0 +1,29 @@
+Carmesi:
+  base_health: 16 # Cantidad de corazones enteros (2 puntos de salud por corazón).
+  effects: # La lista de efectos
+    - regeneration
+    - night_vision
+
+Draconico:
+  base_health: 24 # Cantidad de corazones enteros (2 puntos de salud por corazón).
+  effects: # La lista de efectos
+    - strength
+    - night_vision
+
+Elfo:
+  base_health: 18 # Cantidad de corazones enteros (2 puntos de salud por corazón).
+  effects: # La lista de efectos
+    - speed
+    - night_vision
+    - luck
+
+Humano:
+  base_health: 20 # Cantidad de corazones enteros (2 puntos de salud por corazón).
+  effects: # La lista de efectos
+
+Leviathan:
+  base_health: 22 # Cantidad de corazones enteros (2 puntos de salud por corazón).
+  effects: # La lista de efectos
+    - resistance
+    - night_vision
+    - water_breathing

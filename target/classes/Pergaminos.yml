@@ -1,0 +1,66 @@
+Pergaminos: 
+  Carmesi:
+    Tier1:
+      name: '&c&lTransfusión de Sangre'
+      lore:
+      - "&7Robale vida a tu enemigo"
+      - ""
+      - "&7Raza : &c&lCarmesi"
+      - "&7Activar : Click derecho"
+      customModelData: 1
+      unbreaking: false
+      hide_enchants: true
+      cooldown: 3 # Segundos
+      range: 10 # Bloques
+      damage: 4.0 # Daño que inflige
+      heal: 4.0 # Vida transferida al jugador
+      glowing_target_during: 1 #Segundos
+      glowing_player_during: 1 #Segundos
+
+  Draconico:
+    Tier1:
+      name: '&8&lBola de Fuego'
+      lore:
+      - "&7Haz arder a tus enemigos"
+      - ""
+      - "&7Raza : &8&lDraconico"
+      - "&7Activar : Click derecho"
+      customModelData : 2
+      unbreaking: false
+      hide_enchants: true
+
+  Elfo:
+    Tier1:
+      name: '&e&lSigilo de Hojas'
+      lore:
+      - "&7Ocultate detras de una cortina de humo"
+      - ""
+      - "&7Raza : &e&lElfo"
+      - "&7Activar : Click derecho"
+      customModelData : 3
+      unbreaking: false
+      hide_enchants: true
+
+  Humano:
+    Tier1:
+      name: '&2&lGrito de Guerra'
+      lore:
+      - "&7Revitalizate, hazte mas fuerte"
+      - ""
+      - "&7Raza : &2&lHumano"
+      - "&7Activar : Click derecho"
+      customModelData : 4
+      unbreaking: false
+      hide_enchants: true
+
+  Leviathan:
+    Tier1:
+      name: '&9&lRevitalización de Agua'
+      lore:
+      - "&7Curate a ti y a tus aliados cercanos"
+      - ""
+      - "&7Raza : &9&lLeviathan"
+      - "&7Activar : Click derecho"
+      customModelData : 5
+      unbreaking: false
+      hide_enchants: true

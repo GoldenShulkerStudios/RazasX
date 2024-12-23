@@ -1,0 +1,97 @@
+panels:
+  SelectRaza:
+    rows: 2
+    title: '&8Selecciona tu Raza'
+    item:
+      '0':
+        material: REDSTONE
+        stack: 1
+        name: '&c&lCARMESI'
+      '1':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '2':
+        material: LAPIS_LAZULI
+        stack: 1
+        name: '&9&lLEVIATHAN'
+      '3':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '4':
+        material: EMERALD
+        stack: 1
+        name: '&2&lHUMANO'
+      '5':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '6':
+        material: COAL
+        stack: 1
+        name: '&8&lDRACONICO'
+      '7':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '8':
+        material: GOLD_INGOT
+        stack: 1
+        name: '&e&lELFO'
+      '9':
+        material: RED_STAINED_GLASS_PANE
+        stack: 1
+        name: '&c&lCLICK AQUI PARA NACER!'
+        lore:
+        - "&7Nace con raza Carmeci y muestra"
+        - "&7tu sed de sangre"
+        - ""
+      '10':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '11':
+        material: BLUE_STAINED_GLASS_PANE
+        stack: 1
+        name: '&9&lCLICK AQUI PARA NACER!'
+        lore:
+        - "&7Nace con raza Leviathan y muestra"
+        - "&7tu agudeza en la batalla"
+        - ""
+      '12':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '13':
+        material: GREEN_STAINED_GLASS_PANE
+        stack: 1
+        name: '&2&lCLICK AQUI PARA NACER!'
+        lore:
+        - "&7Nace con raza Humana y muestra"
+        - "&7tu instinto de supervivencia"
+        - ""
+      '14':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '15':
+        material: BLACK_STAINED_GLASS_PANE
+        stack: 1
+        name: '&8&lCLICK AQUI PARA NACER!'
+        lore:
+        - "&7Nace con raza Draconica y muestra"
+        - "&7tu fuerza ante las demas razas"
+        - ""
+      '16':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '17':
+        material: YELLOW_STAINED_GLASS_PANE
+        stack: 1
+        name: '&e&lCLICK AQUI PARA NACER!'
+        lore:
+        - "&7Nace con raza Elfica y muestra"
+        - "&7tu riquesa y sabiduria"
+        - ""

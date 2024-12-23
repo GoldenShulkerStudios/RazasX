@@ -1,0 +1,10 @@
+name: Razas
+description: Plugin para gestionar razas en el servidor de Minecraft.
+author: Ewahv1
+main: me.ewahv1.plugin.Main
+version: 0.0.1
+api-version: 1.20
+commands:
+  razas:
+    description: Abre el inventario para seleccionar una raza.
+    usage: /razas

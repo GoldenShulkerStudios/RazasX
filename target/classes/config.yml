@@ -1,0 +1,11 @@
+# Configuración principal del plugin
+sql: false # Define si se utiliza una base de datos SQL (true) o almacenamiento local (false).
+
+# Configuración del origen de datos (Base de datos SQL)
+datasource:
+  backend: mysql # Motor de base de datos utilizado (por defecto: MySQL).
+  mySQLHost: 'localhost' # Dirección IP o hostname del servidor de base de datos.
+  mySQLPort: '3306' # Puerto del servidor de base de datos (por defecto: 3306 para MySQL).
+  mySQLUsername: 'root' # Nombre de usuario para acceder a la base de datos.
+  mySQLPassword: 'root' # Contraseña para acceder a la base de datos.
+  mySQLDatabase: 'razas' # Nombre de la base de datos donde se almacenarán los datos del plugin.
