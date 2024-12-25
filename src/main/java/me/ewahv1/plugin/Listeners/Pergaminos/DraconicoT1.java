@@ -15,7 +15,9 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
@@ -54,11 +56,11 @@ public class DraconicoT1 implements Listener {
         customModelData = config.getInt(basePath + "customModelData", 2);
         cooldownTime = config.getInt(basePath + "cooldown", 3) * 1000;
         range = config.getInt(basePath + "range", 10);
-        poderExplosion = (float) config.getDouble(basePath + "poder_explosión", 4.0);
+        poderExplosion = (float) config.getDouble(basePath + "power_explosión", 4.0);
 
         plugin.getLogger().info("Configuración Dracónico cargada: name=" + itemName +
                 ", customModelData=" + customModelData +
-                ", cooldown=" + cooldownTime + "ms, range=" + range + ", poder_explosión=" + poderExplosion);
+                ", cooldown=" + cooldownTime + "ms, range=" + range + ", power_explosión=" + poderExplosion);
     }
 
     @EventHandler
@@ -69,19 +71,28 @@ public class DraconicoT1 implements Listener {
         if ((event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
                 && isValidPergamino(item)) {
 
+            // Verificación de raza Dracónico
             if (!isDraconico(player)) {
-                sendActionBar(player, ChatColor.RED + "Solo los Dracónicos pueden usar este pergamino.");
+                sendActionBar(player, ChatColor.DARK_RED + "Solo los " + ChatColor.GOLD + "Dracónicos"
+                        + ChatColor.DARK_RED + " pueden usar este pergamino.");
                 return;
             }
 
+            // Verificación de cooldown
             if (isInCooldown(player)) {
                 long timeLeft = (cooldowns.get(player.getUniqueId()) + cooldownTime - System.currentTimeMillis())
                         / 1000;
-                sendActionBar(player, ChatColor.RED + "Espera " + timeLeft + " segundos para usar 'Bola de Fuego'.");
+                sendActionBar(player, ChatColor.RED + "Espera " + ChatColor.YELLOW + timeLeft + ChatColor.RED
+                        + " segundos para usar " + ChatColor.GOLD + "'Bola de Fuego'" + ChatColor.RED + ".");
                 return;
             }
 
+            // Activación del pergamino
             cooldowns.put(player.getUniqueId(), System.currentTimeMillis());
+            sendActionBar(player, ChatColor.GREEN + "Has usado el pergamino: " + ChatColor.GOLD + "'Bola de Fuego'"
+                    + ChatColor.GREEN + " con éxito.");
+
+            // Aplicar efecto
             applyGlowingToPlayer(player);
         }
     }
@@ -123,45 +134,83 @@ public class DraconicoT1 implements Listener {
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
 
         String basePath = "Pergaminos.Draconico.Tier1.";
-        double range = config.getDouble(basePath + "range", 10); // Rango en bloques
-        double initialSpeed = config.getDouble(basePath + "initial_speed", 1.5); // Velocidad inicial
-        double gravityForce = config.getDouble(basePath + "gravity_force", 0.05); // Gravedad personalizada
+        double initialSpeed = config.getDouble(basePath + "initial_speed", 2.0);
+        double gravityForce = config.getDouble(basePath + "gravity_force", 0.2);
+        double damage = config.getDouble(basePath + "damage", 10.0);
+        double explosionPower = config.getDouble(basePath + "power_explosión", 4.0);
+
+        plugin.getLogger().info("[DEBUG] Lanzando bola de fuego:");
+        plugin.getLogger().info("Velocidad inicial: " + initialSpeed);
+        plugin.getLogger().info("Fuerza de gravedad: " + gravityForce);
+        plugin.getLogger().info("Daño directo: " + damage);
+        plugin.getLogger().info("Poder de explosión: " + explosionPower);
 
         Location eyeLocation = player.getEyeLocation();
         Vector direction = eyeLocation.getDirection().normalize();
 
-        // Calcular ángulo de lanzamiento (por defecto, se lanza horizontalmente)
-        double angle = Math.toRadians(45); // Ajustar para parábolas
-        direction.setY(Math.tan(angle)); // Ajustar dirección vertical según el ángulo
+        double angle = Math.toRadians(45);
+        direction.setY(Math.tan(angle));
 
-        // Crear y lanzar la bola de fuego
         Fireball fireball = player.getWorld().spawn(eyeLocation.add(direction.multiply(2)), Fireball.class);
         fireball.setShooter(player);
         fireball.setDirection(direction.multiply(initialSpeed));
-        fireball.setYield((float) range / 2); // Relacionar el rango con la explosión
+        fireball.setYield((float) explosionPower);
         fireball.setIsIncendiary(false);
 
-        // Simular gravedad personalizada
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (fireball.isDead() || fireball.isOnGround()) {
-                return; // Detener si la bola de fuego ya explotó
-            }
+        fireball.setMetadata("damage", new FixedMetadataValue(plugin, damage));
 
-            // Aplicar gravedad para ajustar la trayectoria
-            Vector velocity = fireball.getVelocity();
-            velocity.setY(velocity.getY() - gravityForce); // Controla el descenso
-            fireball.setVelocity(velocity);
+        plugin.getLogger().info("[DEBUG] Bola de fuego lanzada desde: " + eyeLocation.toString());
+
+        // Gravedad personalizada con cancelación del Task
+        final BukkitTask[] task = new BukkitTask[1]; // Usar un array para capturar el task
+        task[0] = Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
+            @Override
+            public void run() {
+                if (fireball.isDead() || fireball.isOnGround()) {
+                    plugin.getLogger().info("[DEBUG] Bola de fuego destruida o en el suelo. Deteniendo el task.");
+                    task[0].cancel(); // Cancelamos el task almacenado en el array
+                    return;
+                }
+
+                Vector velocity = fireball.getVelocity();
+                velocity.setY(velocity.getY() - gravityForce);
+                fireball.setVelocity(velocity);
+
+                plugin.getLogger().info("[DEBUG] Nueva velocidad de la bola de fuego: " + velocity.toString());
+            }
         }, 1L, 1L);
     }
 
     @EventHandler
     public void onFireballExplosion(EntityExplodeEvent event) {
-        Entity entity = event.getEntity();
-        if (entity instanceof Fireball) {
-            Fireball fireball = (Fireball) entity; // Cast explícito para Java 8+
-            if (fireball.getShooter() instanceof Player) {
-                event.blockList().clear(); // Evita que la explosión destruya bloques
+        try {
+            Entity entity = event.getEntity();
+            if (entity instanceof Fireball) {
+                Fireball fireball = (Fireball) entity;
+
+                if (fireball.getShooter() instanceof Player) {
+                    Player shooter = (Player) fireball.getShooter();
+
+                    double damage = fireball.hasMetadata("damage")
+                            ? fireball.getMetadata("damage").get(0).asDouble()
+                            : 10.0;
+
+                    plugin.getLogger().info("[DEBUG] Bola de fuego explotó. Daño directo: " + damage);
+
+                    for (Entity nearbyEntity : fireball.getNearbyEntities(5, 5, 5)) {
+                        if (nearbyEntity instanceof Player && !nearbyEntity.equals(shooter)) {
+                            ((Player) nearbyEntity).damage(damage, shooter);
+                            plugin.getLogger()
+                                    .info("[DEBUG] Jugador afectado: " + nearbyEntity.getName() + " - Daño: " + damage);
+                        }
+                    }
+
+                    event.blockList().clear();
+                    plugin.getLogger().info("[DEBUG] Bloques afectados por la explosión eliminados.");
+                }
             }
+        } catch (Exception e) {
+            plugin.getLogger().warning("[DEBUG] Error manejando la explosión: " + e.getMessage());
         }
     }
 

@@ -3,7 +3,7 @@ Pergaminos:
     Tier1:
       name: '&c&lTransfusión de Sangre'
       lore:
-      - "&7Robale vida a tu enemigo"
+      - "&7Róbale vida a tu enemigo"
       - ""
       - "&7Raza : &c&lCarmesi"
       - "&7Activar : Click derecho"
@@ -29,11 +29,10 @@ Pergaminos:
       unbreaking: false
       hide_enchants: true
       cooldown: 3 # Segundos
-      range: 5 # Bloques
       initial_speed: 2.0 # Velocidad inicial
       gravity_force: 0.2 # Gravedad personalizada
-      poder_explosión: 10 # Daño que inflige
-      glowing_player_during: 1 #Segundos
+      damage: 10.0 # Daño directo
+      power_explosión: 4.0 # Potencia de la explosión
 
   Elfo:
     Tier1:
@@ -70,3 +69,9 @@ Pergaminos:
       customModelData : 5
       unbreaking: false
       hide_enchants: true
+      cooldown: 3 # Segundos
+      glowing_player_during: 1 #Segundos
+      duration_effects: 10 #Segundos
+      effects:
+        - speed
+        - regeneration

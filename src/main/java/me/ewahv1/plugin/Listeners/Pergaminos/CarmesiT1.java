@@ -69,27 +69,36 @@ public class CarmesiT1 implements Listener {
 
             if (!isCarmesi(player)) {
                 sendActionBar(player, ChatColor.RED + "Solo los Carmesí pueden usar este pergamino.");
-                plugin.getLogger().info(player.getName() + " no pertenece a la raza Carmesí.");
+                plugin.getLogger().info(ChatColor.RED + player.getName() + " no pertenece a la raza Carmesí.");
                 return;
             }
 
             if (isInCooldown(player)) {
                 long timeLeft = (cooldowns.get(player.getUniqueId()) + cooldownTime - System.currentTimeMillis())
                         / 1000;
-                sendActionBar(player,
-                        ChatColor.RED + "Espera " + timeLeft + " segundos para usar Transfusión de Sangre.");
+                sendActionBar(player, ChatColor.RED + "Espera " + ChatColor.YELLOW + timeLeft + ChatColor.RED
+                        + " segundos para usar " + ChatColor.DARK_RED + "Transfusión de Sangre" + ChatColor.RED + ".");
                 return;
             }
 
             Entity target = getTargetEntity(player, range);
             if (target == null || !(target instanceof LivingEntity)) {
                 sendActionBar(player, ChatColor.RED + "No estás apuntando a una entidad válida.");
+                plugin.getLogger().info(ChatColor.YELLOW + player.getName()
+                        + " intentó usar el pergamino, pero no apuntó a un objetivo válido.");
                 return;
             }
 
+            // Poner al jugador en cooldown
             cooldowns.put(player.getUniqueId(), System.currentTimeMillis());
-            sendActionBar(player, ChatColor.GREEN + "Has usado el pergamino 'Transfusión de Sangre'.");
 
+            // Mensaje y registro de éxito
+            sendActionBar(player, ChatColor.GREEN + "Has usado el pergamino " + ChatColor.DARK_RED
+                    + "'Transfusión de Sangre'" + ChatColor.GREEN + ".");
+            plugin.getLogger()
+                    .info(ChatColor.GREEN + player.getName() + " ha usado el pergamino 'Transfusión de Sangre'.");
+
+            // Aplicar efecto al objetivo
             applyGlowingEffect((LivingEntity) target, player);
         }
     }
