@@ -21,11 +21,11 @@ public class IniciarJugadorRaza implements Listener {
 
     public static void entregarPergamino(Player player, String razaSeleccionada) {
         File pergaminosFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "Pergaminos.yml");
-        File razasFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "razas.yml");
+        File razasFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "Razas.yml");
 
         if (!pergaminosFile.exists() || !razasFile.exists()) {
             player.sendMessage(
-                    ChatColor.RED + "No se encontraron los archivos necesarios (Pergaminos.yml o razas.yml).");
+                    ChatColor.RED + "No se encontraron los archivos necesarios (Pergaminos.yml o Razas.yml).");
             return;
         }
 
@@ -80,7 +80,7 @@ public class IniciarJugadorRaza implements Listener {
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        File razasFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "razas.yml");
+        File razasFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "Razas.yml");
 
         if (!razasFile.exists())
             return;

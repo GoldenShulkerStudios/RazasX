@@ -26,8 +26,8 @@ public class CreateDatabase {
         try (Connection connection = getConnection();
                 Statement statement = connection.createStatement()) {
 
-            // Crear la tabla 'razas' con los campos necesarios
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS razas (" +
+            // Crear la tabla 'Razas' con los campos necesarios
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Razas (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY, " +
                     "raza VARCHAR(50), " +
                     "uuid VARCHAR(36), " +

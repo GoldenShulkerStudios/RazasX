@@ -44,7 +44,7 @@ public class AsignarRazaPlayer {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
                 YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-                config.createSection("razas");
+                config.createSection("Razas");
                 config.save(file);
                 plugin.getLogger().info("Archivo PlayerRazas.yml creado exitosamente.");
             } catch (IOException e) {
@@ -60,8 +60,8 @@ public class AsignarRazaPlayer {
         File file = new File(plugin.getDataFolder(), "PlayerRazas.yml");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
-        if (!config.contains("razas")) {
-            config.createSection("razas");
+        if (!config.contains("Razas")) {
+            config.createSection("Razas");
         }
 
         plugin.getLogger().info("Comprobando si el jugador ya pertenece a una raza...");
@@ -71,7 +71,7 @@ public class AsignarRazaPlayer {
             return;
         }
 
-        config.set("razas." + razaSeleccionada + "." + player.getUniqueId() + ".nick", player.getName());
+        config.set("Razas." + razaSeleccionada + "." + player.getUniqueId() + ".nick", player.getName());
         plugin.getLogger().info("Asignando la raza " + razaSeleccionada + " al jugador " + player.getName());
 
         try {
@@ -88,13 +88,13 @@ public class AsignarRazaPlayer {
     }
 
     private static boolean yaPerteneceARaza(String uuid, YamlConfiguration config) {
-        if (!config.contains("razas")) {
-            plugin.getLogger().info("La sección 'razas' no existe en PlayerRazas.yml.");
+        if (!config.contains("Razas")) {
+            plugin.getLogger().info("La sección 'Razas' no existe en PlayerRazas.yml.");
             return false;
         }
 
-        for (String raza : config.getConfigurationSection("razas").getKeys(false)) {
-            if (config.contains("razas." + raza + "." + uuid)) {
+        for (String raza : config.getConfigurationSection("Razas").getKeys(false)) {
+            if (config.contains("Razas." + raza + "." + uuid)) {
                 plugin.getLogger().info("El UUID " + uuid + " ya pertenece a la raza " + raza);
                 return true;
             }
@@ -106,7 +106,7 @@ public class AsignarRazaPlayer {
     private static void asignarRazaSQL(Player player, String razaSeleccionada) {
         plugin.getLogger().info("Asignando raza en la base de datos para el jugador " + player.getName());
         try (Connection connection = CreateDatabase.getConnection()) {
-            String query = "SELECT raza FROM razas WHERE uuid = ?";
+            String query = "SELECT raza FROM Razas WHERE uuid = ?";
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setString(1, player.getUniqueId().toString());
 
@@ -120,7 +120,7 @@ public class AsignarRazaPlayer {
                 return;
             }
 
-            query = "INSERT INTO razas (raza, uuid, nick) VALUES (?, ?, ?)";
+            query = "INSERT INTO Razas (raza, uuid, nick) VALUES (?, ?, ?)";
             stmt = connection.prepareStatement(query);
             stmt.setString(1, razaSeleccionada);
             stmt.setString(2, player.getUniqueId().toString());

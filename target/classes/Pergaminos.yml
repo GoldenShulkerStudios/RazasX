@@ -36,7 +36,7 @@ Pergaminos:
 
   Elfo:
     Tier1:
-      name: '&e&lSigilo de Hojas'
+      name: '&e&lOjo de Alcon'
       lore:
       - "&7Ocultate detras de una cortina de humo"
       - ""
@@ -45,6 +45,13 @@ Pergaminos:
       customModelData : 3
       unbreaking: false
       hide_enchants: true
+      cooldown: 3 # Segundos
+      glowing_player_during: 10 #Segundos
+      duration_slow_target: 5 #Segundos
+      duration_spell: 10 #Segundos
+      duration_effects: 10 #Segundos
+      effects:
+        - slow_falling
 
   Humano:
     Tier1:
@@ -57,6 +64,14 @@ Pergaminos:
       customModelData : 4
       unbreaking: false
       hide_enchants: true
+      cooldown: 3 # Segundos
+      glowing_player_during: 10 #Segundos
+      duration_effects: 10 #Segundos
+      effects:
+        - speed
+        - regeneration
+        - night_vision
+        - resistence
 
   Leviathan:
     Tier1:
@@ -70,7 +85,7 @@ Pergaminos:
       unbreaking: false
       hide_enchants: true
       cooldown: 3 # Segundos
-      glowing_player_during: 1 #Segundos
+      glowing_player_during: 10 #Segundos
       duration_effects: 10 #Segundos
       effects:
         - speed

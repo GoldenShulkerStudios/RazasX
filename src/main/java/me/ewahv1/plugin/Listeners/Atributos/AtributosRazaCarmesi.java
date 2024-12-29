@@ -1,75 +1,80 @@
 package me.ewahv1.plugin.Listeners.Atributos;
 
+import me.ewahv1.plugin.Utils.DamageManager;
+import me.ewahv1.plugin.Utils.RazaManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.plugin.Plugin;
 
-import me.ewahv1.plugin.Listeners.AsignarRazaPlayer;
+public class AtributosRazaCarmesi implements Listener {
 
-import java.io.File;
+    private final DamageManager damageManager;
+    private final RazaManager razaManager;
 
-public class AtributosRazaCarmesi extends AsignarRazaPlayer implements Listener {
+    public AtributosRazaCarmesi(Plugin plugin) {
+        // Inicializar DamageManager y RazaManager
+        this.damageManager = new DamageManager(plugin);
+        this.razaManager = new RazaManager(plugin);
+
+        // Registrar lógica específica para Carmesi en DamageManager
+        damageManager.registrarHandler("Carmesi", this::procesarDañoCarmesi);
+    }
 
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event) {
-        // Verificar si el daño lo está recibiendo un jugador
+        // Verificar que la entidad es un jugador
         if (!(event.getEntity() instanceof Player)) {
-            Bukkit.getLogger().info("Evento de daño ignorado: la entidad no es un jugador.");
             return;
         }
+
         Player player = (Player) event.getEntity();
 
-        // Obtener raza del jugador
-        String raza = obtenerRazaJugador(player);
-        if (raza == null) {
-            Bukkit.getLogger().info("El jugador " + player.getName() + " no tiene raza asignada. Ignorando evento.");
+        // Verificar si la raza del jugador es "Carmesi"
+        String raza = razaManager.obtenerRaza(player);
+        if (raza == null || !raza.equalsIgnoreCase("Carmesi")) {
             return;
         }
 
-        Bukkit.getLogger().info("El jugador " + player.getName() + " tiene la raza: " + raza);
-
-        // Aplicar resistencias y debilidades para la raza Carmesí
-        if (raza.equalsIgnoreCase("Carmesi")) {
-            Bukkit.getLogger().info(
-                    "Procesando resistencias y debilidades para el jugador " + player.getName() + " (Carmesi).");
-            procesarResistenciasYDebilidades(event, player);
-        }
+        // Delegar la gestión del daño al DamageManager
+        damageManager.manejarDaño(event);
     }
 
-    private void procesarResistenciasYDebilidades(EntityDamageEvent event, Player player) {
+    /**
+     * Lógica específica para la raza Carmesi.
+     *
+     * @param event  El evento de daño.
+     * @param player El jugador que recibió el daño.
+     */
+    private void procesarDañoCarmesi(EntityDamageEvent event, Player player) {
         double originalDamage = event.getDamage();
         EntityDamageEvent.DamageCause cause = event.getCause();
 
-        Bukkit.getLogger().info("El jugador " + player.getName() + " recibió daño de tipo: " + cause
-                + " con daño original: " + originalDamage);
+        Bukkit.getLogger().info("[DEBUG] El jugador " + player.getName() + " (Carmesi) recibió daño: " + cause
+                + ", cantidad: " + originalDamage);
 
         // Resistencia al veneno
         if (cause == EntityDamageEvent.DamageCause.POISON) {
             double reducedDamage = originalDamage * 0.75; // 25% menos de daño
             event.setDamage(reducedDamage);
-            Bukkit.getLogger()
-                    .info(player.getName() + " (Carmesi) recibió daño reducido de " + cause + " a " + reducedDamage);
-            return;
+            Bukkit.getLogger().info("[DEBUG] Daño reducido por resistencia al veneno: " + reducedDamage);
         }
-
-        // La debilidad frente a espadas de madera se maneja en otro evento
     }
 
     @EventHandler
     public void onPlayerDamageByEntity(EntityDamageByEntityEvent event) {
-        // Verificar si el daño lo está recibiendo un jugador
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
+
         Player player = (Player) event.getEntity();
 
-        // Obtener raza del jugador
-        String raza = obtenerRazaJugador(player);
+        // Obtener raza del jugador usando RazaManager
+        String raza = razaManager.obtenerRaza(player);
         if (raza == null || !raza.equalsIgnoreCase("Carmesi")) {
             return;
         }
@@ -81,36 +86,8 @@ public class AtributosRazaCarmesi extends AsignarRazaPlayer implements Listener 
                 double originalDamage = event.getDamage();
                 double increasedDamage = originalDamage * 1.25; // 25% más de daño
                 event.setDamage(increasedDamage);
-                Bukkit.getLogger().info(player.getName() + " (Carmesi) recibió daño aumentado por espada de madera de "
-                        + damager.getName() + " a " + increasedDamage);
+                Bukkit.getLogger().info("[DEBUG] Daño aumentado por espada de madera: " + increasedDamage);
             }
         }
-    }
-
-    private String obtenerRazaJugador(Player player) {
-        // Ruta al archivo dentro de la carpeta "razas"
-        File playerRazasFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "PlayerRazas.yml");
-
-        // Verificar si el archivo existe
-        if (!playerRazasFile.exists()) {
-            Bukkit.getLogger()
-                    .warning("El archivo PlayerRazas.yml no existe. No se puede determinar la raza del jugador.");
-            return null;
-        }
-
-        // Cargar la configuración YAML
-        YamlConfiguration playerRazasConfig = YamlConfiguration.loadConfiguration(playerRazasFile);
-
-        // Buscar el UUID del jugador dentro de las razas
-        String uuid = player.getUniqueId().toString();
-        for (String raza : playerRazasConfig.getConfigurationSection("razas").getKeys(false)) {
-            if (playerRazasConfig.contains("razas." + raza + "." + uuid)) {
-                Bukkit.getLogger().info("Raza encontrada para el jugador " + player.getName() + ": " + raza);
-                return raza;
-            }
-        }
-
-        Bukkit.getLogger().info("No se encontró raza para el jugador " + player.getName());
-        return null;
     }
 }

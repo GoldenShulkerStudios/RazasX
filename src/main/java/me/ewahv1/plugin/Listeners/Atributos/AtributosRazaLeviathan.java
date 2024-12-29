@@ -1,27 +1,37 @@
 package me.ewahv1.plugin.Listeners.Atributos;
 
+import me.ewahv1.plugin.Utils.DamageManager;
+import me.ewahv1.plugin.Utils.RazaManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
-import me.ewahv1.plugin.Listeners.AsignarRazaPlayer;
+public class AtributosRazaLeviathan implements Listener {
 
-import java.io.File;
+    private final DamageManager damageManager;
+    private final RazaManager razaManager;
 
-public class AtributosRazaLeviathan extends AsignarRazaPlayer implements Listener {
+    public AtributosRazaLeviathan(Plugin plugin) {
+        // Inicializar DamageManager y RazaManager
+        this.damageManager = new DamageManager(plugin);
+        this.razaManager = new RazaManager(plugin);
+
+        // Registrar lógica específica para Leviathan en DamageManager
+        damageManager.registrarHandler("Leviathan", this::procesarDañoLeviathan);
+    }
 
     @EventHandler
     public void onPlayerConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
 
-        // Obtener raza del jugador
-        String raza = obtenerRazaJugador(player);
+        // Obtener raza del jugador usando RazaManager
+        String raza = razaManager.obtenerRaza(player);
         if (raza == null || !raza.equalsIgnoreCase("Leviathan")) {
             return;
         }
@@ -33,64 +43,57 @@ public class AtributosRazaLeviathan extends AsignarRazaPlayer implements Listene
 
             // Cancelar efectos negativos (hambre) y otorgar doble saturación
             event.setCancelled(true); // Cancelar el consumo normal
-            player.getFoodLevel();
             player.setFoodLevel(Math.min(20, player.getFoodLevel() + 8)); // Incrementar comida (doble de 4)
             player.setSaturation(Math.min(20, player.getSaturation() + 4)); // Incrementar saturación
-            Bukkit.getLogger().info(player.getName() + " (Leviathan) ha comido carne de zombie con efecto mejorado.");
+
+            // Reemplazar el ítem consumido para reflejar la acción
+            if (consumedItem.getAmount() > 1) {
+                consumedItem.setAmount(consumedItem.getAmount() - 1);
+            } else {
+                player.getInventory().removeItem(consumedItem);
+            }
+
+            Bukkit.getLogger().info(player.getName() + " (Leviathan) ha consumido carne de zombie con beneficios.");
         }
     }
 
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event) {
-        // Verificar si el daño lo está recibiendo un jugador
+        // Verificar que la entidad es un jugador
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
+
         Player player = (Player) event.getEntity();
 
-        // Obtener raza del jugador
-        String raza = obtenerRazaJugador(player);
+        // Verificar si la raza del jugador es "Carmesi"
+        String raza = razaManager.obtenerRaza(player);
         if (raza == null || !raza.equalsIgnoreCase("Leviathan")) {
             return;
         }
 
-        // Verificar debilidades al fuego
+        // Delegar la gestión del daño al DamageManager
+        damageManager.manejarDaño(event);
+    }
+
+    /**
+     * Lógica específica para la raza Leviathan.
+     *
+     * @param event  El evento de daño.
+     * @param player El jugador que recibió el daño.
+     */
+    private void procesarDañoLeviathan(EntityDamageEvent event, Player player) {
         EntityDamageEvent.DamageCause cause = event.getCause();
+        double originalDamage = event.getDamage();
+
+        // Debilidades al fuego
         if (cause == EntityDamageEvent.DamageCause.FIRE ||
                 cause == EntityDamageEvent.DamageCause.FIRE_TICK ||
                 cause == EntityDamageEvent.DamageCause.LAVA) {
-            double originalDamage = event.getDamage();
             double increasedDamage = originalDamage * 1.25; // 25% más de daño
             event.setDamage(increasedDamage);
             Bukkit.getLogger().info(player.getName() + " (Leviathan) recibió daño aumentado de " + cause + " a "
                     + increasedDamage);
         }
-    }
-
-    private String obtenerRazaJugador(Player player) {
-        // Ruta al archivo dentro de la carpeta "razas"
-        File playerRazasFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "PlayerRazas.yml");
-
-        // Verificar si el archivo existe
-        if (!playerRazasFile.exists()) {
-            Bukkit.getLogger()
-                    .warning("El archivo PlayerRazas.yml no existe. No se puede determinar la raza del jugador.");
-            return null;
-        }
-
-        // Cargar la configuración YAML
-        YamlConfiguration playerRazasConfig = YamlConfiguration.loadConfiguration(playerRazasFile);
-
-        // Buscar el UUID del jugador dentro de las razas
-        String uuid = player.getUniqueId().toString();
-        for (String raza : playerRazasConfig.getConfigurationSection("razas").getKeys(false)) {
-            if (playerRazasConfig.contains("razas." + raza + "." + uuid)) {
-                Bukkit.getLogger().info("Raza encontrada para el jugador " + player.getName() + ": " + raza);
-                return raza;
-            }
-        }
-
-        Bukkit.getLogger().info("No se encontró raza para el jugador " + player.getName());
-        return null;
     }
 }

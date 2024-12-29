@@ -1,5 +1,6 @@
 package me.ewahv1.plugin.Listeners.Pergaminos;
 
+import me.ewahv1.plugin.Utils.PergaminoHandler;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -8,139 +9,80 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
+import me.ewahv1.plugin.Utils.RazaManager;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
-public class CarmesiT1 implements Listener {
+public class CarmesiT1 implements PergaminoHandler {
 
     private final JavaPlugin plugin;
-    private final Map<UUID, Long> cooldowns = new HashMap<>();
-    private String itemName;
-    private int customModelData;
-    private int cooldownTime;
-    private int range;
 
     public CarmesiT1(JavaPlugin plugin) {
         this.plugin = plugin;
-        loadConfigValues();
     }
 
-    private void loadConfigValues() {
-        File file = new File(plugin.getDataFolder(), "Pergaminos.yml");
-        if (!file.exists()) {
-            plugin.getLogger().warning("No se encontró el archivo Pergaminos.yml. Usando valores predeterminados.");
+    @Override
+    public void onUse(Player player, ItemStack item) {
+        plugin.getLogger().info("[DEBUG] Intentando activar el pergamino Carmesí T1 para " + player.getName());
+
+        // Lógica del pergamino (sin cambios)
+        if (!isPlayerOfRace(player)) {
+            sendActionBar(player, ChatColor.RED + "Este pergamino solo puede ser usado por la raza Carmesí.");
+            plugin.getLogger().info("[DEBUG] El jugador " + player.getName() + " no pertenece a la raza Carmesí.");
             return;
         }
 
-        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
-        String basePath = "Pergaminos.Carmesi.Tier1.";
-
-        itemName = ChatColor.translateAlternateColorCodes('&',
-                config.getString(basePath + "name", "&c&lTransfusión de Sangre"));
-        customModelData = config.getInt(basePath + "customModelData", 1);
-        cooldownTime = config.getInt(basePath + "cooldown", 10) * 1000;
-        range = config.getInt(basePath + "range", 10);
-
-        plugin.getLogger().info("Configuración Carmesí cargada: name=" + itemName +
-                ", customModelData=" + customModelData +
-                ", cooldown=" + cooldownTime + "ms, range=" + range);
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = player.getInventory().getItemInMainHand();
-
-        if ((event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)
-                && isValidPergamino(item)) {
-            plugin.getLogger().info(player.getName() + " está intentando usar el pergamino.");
-
-            if (!isCarmesi(player)) {
-                sendActionBar(player, ChatColor.RED + "Solo los Carmesí pueden usar este pergamino.");
-                plugin.getLogger().info(ChatColor.RED + player.getName() + " no pertenece a la raza Carmesí.");
-                return;
-            }
-
-            if (isInCooldown(player)) {
-                long timeLeft = (cooldowns.get(player.getUniqueId()) + cooldownTime - System.currentTimeMillis())
-                        / 1000;
-                sendActionBar(player, ChatColor.RED + "Espera " + ChatColor.YELLOW + timeLeft + ChatColor.RED
-                        + " segundos para usar " + ChatColor.DARK_RED + "Transfusión de Sangre" + ChatColor.RED + ".");
-                return;
-            }
-
-            Entity target = getTargetEntity(player, range);
-            if (target == null || !(target instanceof LivingEntity)) {
-                sendActionBar(player, ChatColor.RED + "No estás apuntando a una entidad válida.");
-                plugin.getLogger().info(ChatColor.YELLOW + player.getName()
-                        + " intentó usar el pergamino, pero no apuntó a un objetivo válido.");
-                return;
-            }
-
-            // Poner al jugador en cooldown
-            cooldowns.put(player.getUniqueId(), System.currentTimeMillis());
-
-            // Mensaje y registro de éxito
-            sendActionBar(player, ChatColor.GREEN + "Has usado el pergamino " + ChatColor.DARK_RED
-                    + "'Transfusión de Sangre'" + ChatColor.GREEN + ".");
+        if (isInCooldown(player)) {
+            long remaining = getCooldownRemaining(player);
+            sendActionBar(player,
+                    ChatColor.RED + "Espera " + ChatColor.YELLOW + remaining + ChatColor.RED + " segundos.");
             plugin.getLogger()
-                    .info(ChatColor.GREEN + player.getName() + " ha usado el pergamino 'Transfusión de Sangre'.");
-
-            // Aplicar efecto al objetivo
-            applyGlowingEffect((LivingEntity) target, player);
+                    .info("[DEBUG] El jugador " + player.getName() + " está en cooldown para este pergamino.");
+            return;
         }
+
+        int range = getConfigValue("range", 10);
+
+        Entity target = getTargetEntity(player, range);
+        if (target == null || !(target instanceof LivingEntity)) {
+            sendActionBar(player, ChatColor.RED + "No estás apuntando a una entidad válida.");
+            plugin.getLogger().info("[DEBUG] No se encontró un objetivo válido para el pergamino Carmesí.");
+            return;
+        }
+
+        applyGlowingEffect((LivingEntity) target, player);
+        setCooldown(player);
     }
 
     private void applyGlowingEffect(LivingEntity target, Player player) {
-        File file = new File(plugin.getDataFolder(), "Pergaminos.yml");
-        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        int glowingDuration = getConfigValue("glowing_target_during", 1) * 20;
+        double damage = getConfigValue("damage", 5.0);
 
-        int glowingDuration = config.getInt("Pergaminos.Carmesi.Tier1.glowing_target_during", 1) * 20; // Convertir a
-                                                                                                       // ticks
-        double damage = config.getDouble("Pergaminos.Carmesi.Tier1.damage", 5.0); // Daño configurado
+        Team team = getOrCreateTeam("GlowingRed", ChatColor.RED);
 
-        // Agregar al equipo "GlowingRed"
-        Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("GlowingRed");
-        if (team == null) {
-            team = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("GlowingRed");
-            team.setColor(ChatColor.RED);
-        }
-
-        Team finalTeam = team; // Copia efectiva de la referencia
         if (target instanceof Player) {
-            finalTeam.addEntry(((Player) target).getName());
+            team.addEntry(((Player) target).getName());
         } else {
-            finalTeam.addEntry(target.getUniqueId().toString());
+            team.addEntry(target.getUniqueId().toString());
         }
 
-        // Aplicar glowing
         target.setGlowing(true);
-
-        // Programar tarea para eliminar el efecto glowing después del tiempo
-        // especificado
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             target.setGlowing(false);
-            finalTeam.removeEntry(
-                    target instanceof Player ? ((Player) target).getName() : target.getUniqueId().toString());
+            team.removeEntry(target instanceof Player ? ((Player) target).getName() : target.getUniqueId().toString());
 
-            // Reducir la salud del objetivo después de que termine el glowing
             if (target.isValid()) {
                 target.damage(damage);
+                plugin.getLogger().info("[DEBUG] Daño aplicado al objetivo: " + damage);
             }
 
-            // Generar partículas después de que termine el efecto glowing
             generateParticlesToPlayer(target, player);
         }, glowingDuration);
     }
@@ -149,110 +91,51 @@ public class CarmesiT1 implements Listener {
         Location targetLocation = target.getLocation().add(0, 1, 0);
         World world = target.getWorld();
 
-        // Bandera para controlar si las partículas ya tocaron al jugador
-        final boolean[] particlesReachedPlayer = { false };
-
-        // Contenedor mutable para el ID de la tarea
-        final int[] taskId = { 0 };
-
-        taskId[0] = Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
-            private int ticks = 0;
-            private final int maxTicks = 40; // Tiempo máximo para que las partículas lleguen al jugador
-            private final double speed = 0.5; // Velocidad de las partículas
+        new BukkitRunnable() {
+            private final double speed = 0.5;
 
             @Override
             public void run() {
-                // Si ya se alcanzó al jugador, detener la tarea
-                if (particlesReachedPlayer[0]) {
-                    Bukkit.getScheduler().cancelTask(taskId[0]);
-                    return;
-                }
-
                 Location playerLocation = player.getLocation().add(0, 1, 0);
-
-                // Verificar si las partículas han alcanzado al jugador o si se ha excedido el
-                // tiempo
-                if (ticks >= maxTicks || targetLocation.distanceSquared(playerLocation) < 1.0) {
-                    particlesReachedPlayer[0] = true; // Marcar que las partículas llegaron al jugador
-                    Bukkit.getScheduler().cancelTask(taskId[0]); // Detener la tarea
-
-                    // Aplicar glowing al jugador después de que las partículas lo toquen
-                    applyGlowingToPlayer(player);
-                    return;
-                }
-
-                // Calcular la nueva dirección hacia el jugador
-                Vector direction = playerLocation.subtract(targetLocation).toVector().normalize();
+                Vector direction = playerLocation.toVector().subtract(targetLocation.toVector()).normalize();
                 targetLocation.add(direction.multiply(speed));
 
-                // Generar partículas en la nueva ubicación
-                world.spawnParticle(Particle.DUST, targetLocation, 5,
-                        new Particle.DustOptions(Color.RED, 1.5f));
+                world.spawnParticle(Particle.DUST_COLOR_TRANSITION, targetLocation, 5,
+                        new Particle.DustTransition(Color.RED, Color.WHITE, 1.5f));
 
-                ticks++;
+                if (targetLocation.distanceSquared(playerLocation) < 1.0) {
+                    applyGlowingToPlayer(player);
+                    cancel();
+                }
             }
-        }, 0L, 1L).getTaskId(); // Obtener el identificador de la tarea para detenerla
+        }.runTaskTimer(plugin, 0L, 1L);
     }
 
     private void applyGlowingToPlayer(Player player) {
-        File file = new File(plugin.getDataFolder(), "Pergaminos.yml");
-        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        int glowingPlayerDuration = getConfigValue("glowing_player_during", 1) * 20;
+        double heal = getConfigValue("heal", 5.0);
 
-        int glowingPlayerDuration = config.getInt("Pergaminos.Carmesi.Tier1.glowing_player_during", 1) * 20; // Convertir
-                                                                                                             // a ticks
-        double heal = config.getDouble("Pergaminos.Carmesi.Tier1.heal", 5.0); // Curación configurada
-
-        // Obtener o crear el equipo "GlowingRed"
-        Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("GlowingRed");
-        if (team == null) {
-            team = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("GlowingRed");
-            team.setColor(ChatColor.RED);
-        }
-
-        // Referencia efectiva final del equipo
-        final Team finalTeam = team;
-
-        // Agregar al jugador al equipo
-        finalTeam.addEntry(player.getName());
+        Team team = getOrCreateTeam("GlowingRed", ChatColor.RED);
+        team.addEntry(player.getName());
         player.setGlowing(true);
 
-        // Curar al jugador al iniciar su glowing
         player.setHealth(Math.min(player.getHealth() + heal, player.getMaxHealth()));
+        plugin.getLogger().info("[DEBUG] Salud del jugador incrementada en: " + heal);
 
-        // Programar tarea para eliminar el efecto glowing después del tiempo
-        // especificado
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             player.setGlowing(false);
-            finalTeam.removeEntry(player.getName());
+            team.removeEntry(player.getName());
         }, glowingPlayerDuration);
     }
 
-    private boolean isValidPergamino(ItemStack item) {
-        if (item == null || item.getType() != Material.PAPER)
-            return false;
-
-        ItemMeta meta = item.getItemMeta();
-        return meta != null && meta.hasCustomModelData() && meta.getCustomModelData() == customModelData
-                && itemName.equals(meta.getDisplayName());
-    }
-
-    private boolean isCarmesi(Player player) {
-        File file = new File(plugin.getDataFolder(), "PlayerRazas.yml");
-        if (!file.exists()) {
-            plugin.getLogger().warning("No se encontró el archivo PlayerRazas.yml.");
-            return false;
+    private Team getOrCreateTeam(String name, ChatColor color) {
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+        Team team = scoreboard.getTeam(name);
+        if (team == null) {
+            team = scoreboard.registerNewTeam(name);
+            team.setColor(color);
         }
-
-        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
-        String playerUUID = player.getUniqueId().toString();
-
-        return config.contains("razas.Carmesi." + playerUUID);
-    }
-
-    private boolean isInCooldown(Player player) {
-        if (!cooldowns.containsKey(player.getUniqueId()))
-            return false;
-        return System.currentTimeMillis() - cooldowns.get(player.getUniqueId()) < cooldownTime;
+        return team;
     }
 
     private Entity getTargetEntity(Player player, int range) {
@@ -263,7 +146,48 @@ public class CarmesiT1 implements Listener {
                 .orElse(null);
     }
 
+    private boolean isPlayerOfRace(Player player) {
+        String race = new RazaManager(plugin).obtenerRaza(player);
+        return "Carmesi".equalsIgnoreCase(race);
+    }
+
+    private boolean isInCooldown(Player player) {
+        return player.hasMetadata("Carmesi_cooldown") &&
+                System.currentTimeMillis()
+                        - player.getMetadata("Carmesi_cooldown").get(0).asLong() < getConfigValue("cooldown", 5) * 1000;
+    }
+
+    private void setCooldown(Player player) {
+        player.setMetadata("Carmesi_cooldown", new FixedMetadataValue(plugin, System.currentTimeMillis()));
+    }
+
+    private long getCooldownRemaining(Player player) {
+        long lastUse = player.getMetadata("Carmesi_cooldown").get(0).asLong();
+        long cooldownTime = getConfigValue("cooldown", 5) * 1000;
+        return (cooldownTime - (System.currentTimeMillis() - lastUse)) / 1000;
+    }
+
     private void sendActionBar(Player player, String message) {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
+    }
+
+    private <T> T getConfigValue(String key, T defaultValue) {
+        File file = new File(plugin.getDataFolder(), "Pergaminos.yml");
+        if (!file.exists()) {
+            plugin.getLogger().warning("[DEBUG] Archivo Pergaminos.yml no encontrado.");
+            return defaultValue;
+        }
+
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+        String basePath = "Pergaminos.Carmesi.Tier1.";
+
+        if (defaultValue instanceof Integer) {
+            return (T) Integer.valueOf(config.getInt(basePath + key, (Integer) defaultValue));
+        } else if (defaultValue instanceof Double) {
+            return (T) Double.valueOf(config.getDouble(basePath + key, (Double) defaultValue));
+        } else if (defaultValue instanceof String) {
+            return (T) config.getString(basePath + key, (String) defaultValue);
+        }
+        return defaultValue;
     }
 }

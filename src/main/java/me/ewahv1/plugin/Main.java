@@ -1,6 +1,7 @@
 package me.ewahv1.plugin;
 
 import org.bukkit.plugin.java.JavaPlugin;
+
 import me.ewahv1.plugin.Commands.RazaCommand;
 import me.ewahv1.plugin.ConfigFiles.ConfigFile;
 import me.ewahv1.plugin.Listeners.AsignarRazaPlayer;
@@ -11,50 +12,71 @@ import me.ewahv1.plugin.Listeners.Atributos.AtributosRazaElfo;
 import me.ewahv1.plugin.Listeners.Atributos.AtributosRazaHumano;
 import me.ewahv1.plugin.Listeners.Atributos.AtributosRazaLeviathan;
 import me.ewahv1.plugin.Listeners.RazaRespawnListener;
-import me.ewahv1.plugin.Listeners.Pergaminos.CarmesiT1;
-import me.ewahv1.plugin.Listeners.Pergaminos.DraconicoT1;
-import me.ewahv1.plugin.Listeners.Pergaminos.LeviathanT1;
+import me.ewahv1.plugin.Utils.InteractManager;
+import net.md_5.bungee.api.ChatColor;
 
 public class Main extends JavaPlugin {
 
     private static Main instance;
 
+    private static final String PLUGIN_ACTIVATED_MESSAGE = ChatColor.AQUA
+            + "==========================================\n" +
+            ChatColor.GREEN + "       RazasX Plugin Activado\n" +
+            ChatColor.YELLOW + "          Versión: " + ChatColor.WHITE + "%VERSION%\n" +
+            ChatColor.YELLOW + "          Autor: " + ChatColor.WHITE + "GoldenShulkerStudios\n" +
+            ChatColor.AQUA + "==========================================";
+
+    private static final String PLUGIN_DEACTIVATED_MESSAGE = ChatColor.RED
+            + "==========================================\n" +
+            ChatColor.DARK_RED + "       RazasX Plugin Desactivado\n" +
+            ChatColor.RED + "==========================================";
+
     @Override
     public void onEnable() {
         instance = this;
 
-        // Configurar el plugin en AsignarRazaPlayer
+        // Configurar el plugin
         AsignarRazaPlayer.setPlugin(this);
-
-        // Crear archivos de configuración al iniciar el plugin
         ConfigFile.createConfig(this);
 
-        // Registrar el comando /razas
-        getCommand("razas").setExecutor(new RazaCommand(getDataFolder()));
+        // Registrar el comando /Razas
+        getCommand("Razas").setExecutor(new RazaCommand(getDataFolder()));
 
         // Registrar listeners
-        getServer().getPluginManager().registerEvents(new RazaSelectInventory(), this);
-        getServer().getPluginManager().registerEvents(new RazaRespawnListener(), this);
-        getServer().getPluginManager().registerEvents(new AtributosRazaDraconicos(), this);
-        getServer().getPluginManager().registerEvents(new AtributosRazaCarmesi(), this);
-        getServer().getPluginManager().registerEvents(new AtributosRazaLeviathan(), this);
-        getServer().getPluginManager().registerEvents(new AtributosRazaHumano(), this);
-        getServer().getPluginManager().registerEvents(new AtributosRazaElfo(), this);
-        getServer().getPluginManager().registerEvents(new CarmesiT1(this), this);
-        getServer().getPluginManager().registerEvents(new DraconicoT1(this), this);
-        getServer().getPluginManager().registerEvents(new LeviathanT1(this), this);
+        registerListeners();
 
-        getLogger().info("Gurumisland plugin activado correctamente.");
+        // Enviar mensaje de inicio personalizado
+        sendStartupMessage();
+    }
+
+    private void registerListeners() {
+        getServer().getPluginManager().registerEvents(new AtributosRazaCarmesi(this), this);
+        getServer().getPluginManager().registerEvents(new AtributosRazaDraconicos(this), this);
+        getServer().getPluginManager().registerEvents(new AtributosRazaElfo(this), this);
+        getServer().getPluginManager().registerEvents(new AtributosRazaHumano(this), this);
+        getServer().getPluginManager().registerEvents(new AtributosRazaLeviathan(this), this);
+        getServer().getPluginManager().registerEvents(new RazaSelectInventory(), this);
+        getServer().getPluginManager().registerEvents(new RazaRespawnListener(this), this);
+        getServer().getPluginManager().registerEvents(new InteractManager(this), this);
+    }
+
+    private void sendStartupMessage() {
+        getServer().getConsoleSender().sendMessage("");
+        getServer().getConsoleSender()
+                .sendMessage(PLUGIN_ACTIVATED_MESSAGE.replace("%VERSION%", getDescription().getVersion()));
+        getServer().getConsoleSender().sendMessage("");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("Gurumisland plugin desactivado correctamente.");
+        getServer().getConsoleSender().sendMessage("");
+        getServer().getConsoleSender().sendMessage(PLUGIN_DEACTIVATED_MESSAGE);
+        getServer().getConsoleSender().sendMessage("");
     }
 
     /**
      * Obtener la instancia del plugin
-     * 
+     *
      * @return instancia de Main
      */
     public static Main getInstance() {

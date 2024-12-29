@@ -24,10 +24,10 @@ public class ConfigFile {
             YamlConfiguration.loadConfiguration(razaSelectFile);
         }
 
-        // Crear y cargar razas.yml
-        File razasFile = new File(plugin.getDataFolder(), "razas.yml");
+        // Crear y cargar Razas.yml
+        File razasFile = new File(plugin.getDataFolder(), "Razas.yml");
         if (!razasFile.exists()) {
-            plugin.saveResource("razas.yml", false);
+            plugin.saveResource("Razas.yml", false);
         } else {
             YamlConfiguration.loadConfiguration(razasFile);
         }
@@ -44,7 +44,7 @@ public class ConfigFile {
         plugin.getLogger().info("Archivos de configuración cargados correctamente:");
         plugin.getLogger().info("- config.yml");
         plugin.getLogger().info("- InventarioRazaSelect.yml");
-        plugin.getLogger().info("- razas.yml");
+        plugin.getLogger().info("- Razas.yml");
         plugin.getLogger().info("- Pergaminos.yml");
     }
 }

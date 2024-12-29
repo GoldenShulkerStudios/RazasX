@@ -1,61 +1,59 @@
 package me.ewahv1.plugin.Listeners.Atributos;
 
+import me.ewahv1.plugin.Utils.DamageManager;
+import me.ewahv1.plugin.Utils.RazaManager;
+
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.plugin.Plugin;
 
-import me.ewahv1.plugin.Listeners.AsignarRazaPlayer;
+public class AtributosRazaHumano implements Listener {
 
-import java.io.File;
+    private final DamageManager damageManager;
+    private final RazaManager razaManager;
 
-public class AtributosRazaHumano extends AsignarRazaPlayer implements Listener {
+    public AtributosRazaHumano(Plugin plugin) {
+        // Crear e inicializar DamageManager
+        this.damageManager = new DamageManager(plugin);
+        this.razaManager = new RazaManager(plugin);
+
+        // Registrar la lógica específica de manejo de daño para Humanos
+        damageManager.registrarHandler("Humano", this::procesarDañoHumano);
+        Bukkit.getLogger().info("[DEBUG] Manejador de daño registrado para la raza: Humano");
+    }
 
     @EventHandler
     public void onPlayerDamage(EntityDamageEvent event) {
-        // Verificar si el daño lo está recibiendo un jugador
+        // Verificar que la entidad es un jugador
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
+
         Player player = (Player) event.getEntity();
 
-        // Obtener raza del jugador
-        String raza = obtenerRazaJugador(player);
+        // Verificar si la raza del jugador es "Carmesi"
+        String raza = razaManager.obtenerRaza(player);
         if (raza == null || !raza.equalsIgnoreCase("Humano")) {
             return;
         }
 
-        // Mensaje de depuración
-        Bukkit.getLogger().info("El jugador " + player.getName()
-                + " tiene la raza: Humano. No se aplican resistencias ni debilidades.");
+        // Delegar la gestión del daño al DamageManager
+        damageManager.manejarDaño(event);
     }
 
-    private String obtenerRazaJugador(Player player) {
-        // Ruta al archivo dentro de la carpeta "razas"
-        File playerRazasFile = new File(AsignarRazaPlayer.getPlugin().getDataFolder(), "PlayerRazas.yml");
-
-        // Verificar si el archivo existe
-        if (!playerRazasFile.exists()) {
-            Bukkit.getLogger()
-                    .warning("El archivo PlayerRazas.yml no existe. No se puede determinar la raza del jugador.");
-            return null;
-        }
-
-        // Cargar la configuración YAML
-        YamlConfiguration playerRazasConfig = YamlConfiguration.loadConfiguration(playerRazasFile);
-
-        // Buscar el UUID del jugador dentro de las razas
-        String uuid = player.getUniqueId().toString();
-        for (String raza : playerRazasConfig.getConfigurationSection("razas").getKeys(false)) {
-            if (playerRazasConfig.contains("razas." + raza + "." + uuid)) {
-                Bukkit.getLogger().info("Raza encontrada para el jugador " + player.getName() + ": " + raza);
-                return raza;
-            }
-        }
-
-        Bukkit.getLogger().info("No se encontró raza para el jugador " + player.getName());
-        return null;
+    /**
+     * Lógica específica para la raza Humanos.
+     *
+     * @param event  El evento de daño.
+     * @param player El jugador que recibió el daño.
+     */
+    private void procesarDañoHumano(EntityDamageEvent event, Player player) {
+        // Ejemplo básico: log de depuración sin aplicar modificaciones al daño
+        Bukkit.getLogger()
+                .info("[DEBUG] Procesando daño para " + player.getName() + " (Humano). Causa: " + event.getCause());
+        // Puedes agregar lógica personalizada aquí si lo deseas en el futuro
     }
 }

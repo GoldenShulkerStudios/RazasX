@@ -8,4 +8,4 @@ datasource:
   mySQLPort: '3306' # Puerto del servidor de base de datos (por defecto: 3306 para MySQL).
   mySQLUsername: 'root' # Nombre de usuario para acceder a la base de datos.
   mySQLPassword: 'root' # Contraseña para acceder a la base de datos.
-  mySQLDatabase: 'razas' # Nombre de la base de datos donde se almacenarán los datos del plugin.
+  mySQLDatabase: 'Razas' # Nombre de la base de datos donde se almacenarán los datos del plugin.

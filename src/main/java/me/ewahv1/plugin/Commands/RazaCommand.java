@@ -34,7 +34,7 @@ public class RazaCommand implements CommandExecutor {
 
         // Verifica si el archivo de configuración existe
         if (!configFile.exists()) {
-            player.sendMessage("§cEl archivo de configuración de razas no se encontró.");
+            player.sendMessage("§cEl archivo de configuración de Razas no se encontró.");
             return true;
         }
 

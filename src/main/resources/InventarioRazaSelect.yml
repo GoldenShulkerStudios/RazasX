@@ -12,33 +12,33 @@ panels:
         stack: 1
         name: ' '
       '2':
-        material: LAPIS_LAZULI
+        material: COAL
         stack: 1
-        name: '&9&lLEVIATHAN'
+        name: '&8&lDRACONICO'
       '3':
         material: CHAIN
         stack: 1
         name: ' '
       '4':
-        material: EMERALD
+        material: GOLD_INGOT
         stack: 1
-        name: '&2&lHUMANO'
+        name: '&e&lELFO'
       '5':
         material: CHAIN
         stack: 1
         name: ' '
       '6':
-        material: COAL
+        material: EMERALD
         stack: 1
-        name: '&8&lDRACONICO'
+        name: '&2&lHUMANO'
       '7':
         material: CHAIN
         stack: 1
         name: ' '
       '8':
-        material: GOLD_INGOT
+        material: LAPIS_LAZULI
         stack: 1
-        name: '&e&lELFO'
+        name: '&9&lLEVIATHAN'
       '9':
         material: RED_STAINED_GLASS_PANE
         stack: 1
@@ -52,42 +52,18 @@ panels:
         stack: 1
         name: ' '
       '11':
-        material: BLUE_STAINED_GLASS_PANE
+        material: BLACK_STAINED_GLASS_PANE
         stack: 1
-        name: '&9&lCLICK AQUI PARA NACER!'
+        name: '&8&lCLICK AQUI PARA NACER!'
         lore:
-        - "&7Nace con raza Leviathan y muestra"
-        - "&7tu agudeza en la batalla"
+        - "&7Nace con raza Draconica y muestra"
+        - "&7tu fuerza ante las demas Razas"
         - ""
       '12':
         material: CHAIN
         stack: 1
         name: ' '
       '13':
-        material: GREEN_STAINED_GLASS_PANE
-        stack: 1
-        name: '&2&lCLICK AQUI PARA NACER!'
-        lore:
-        - "&7Nace con raza Humana y muestra"
-        - "&7tu instinto de supervivencia"
-        - ""
-      '14':
-        material: CHAIN
-        stack: 1
-        name: ' '
-      '15':
-        material: BLACK_STAINED_GLASS_PANE
-        stack: 1
-        name: '&8&lCLICK AQUI PARA NACER!'
-        lore:
-        - "&7Nace con raza Draconica y muestra"
-        - "&7tu fuerza ante las demas razas"
-        - ""
-      '16':
-        material: CHAIN
-        stack: 1
-        name: ' '
-      '17':
         material: YELLOW_STAINED_GLASS_PANE
         stack: 1
         name: '&e&lCLICK AQUI PARA NACER!'
@@ -95,3 +71,28 @@ panels:
         - "&7Nace con raza Elfica y muestra"
         - "&7tu riquesa y sabiduria"
         - ""
+      '14':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '15':
+        material: GREEN_STAINED_GLASS_PANE
+        stack: 1
+        name: '&2&lCLICK AQUI PARA NACER!'
+        lore:
+        - "&7Nace con raza Humana y muestra"
+        - "&7tu instinto de supervivencia"
+        - ""
+      '16':
+        material: CHAIN
+        stack: 1
+        name: ' '
+      '17':
+        material: BLUE_STAINED_GLASS_PANE
+        stack: 1
+        name: '&9&lCLICK AQUI PARA NACER!'
+        lore:
+        - "&7Nace con raza Leviathan y muestra"
+        - "&7tu agudeza en la batalla"
+        - ""
+
