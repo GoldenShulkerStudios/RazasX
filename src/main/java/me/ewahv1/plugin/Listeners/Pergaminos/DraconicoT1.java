@@ -8,6 +8,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scoreboard.Team;
@@ -16,31 +19,13 @@ import me.ewahv1.plugin.Main;
 
 import java.io.File;
 
-public class DraconicoT1 implements PergaminoHandler {
+public class DraconicoT1 implements PergaminoHandler, Listener {
 
     private final Main plugin;
 
     public DraconicoT1(Main plugin) {
         this.plugin = plugin;
-    }
-
-    private FileConfiguration getConfig() {
-        File file = new File(plugin.getDataFolder(), "Pergaminos.yml");
-        if (!file.exists()) {
-            plugin.getLogger().warning("No se encontró el archivo Pergaminos.yml.");
-            return null;
-        }
-        return YamlConfiguration.loadConfiguration(file);
-    }
-
-    private int getConfigInt(String path, int defaultValue) {
-        FileConfiguration config = getConfig();
-        return config != null ? config.getInt(path, defaultValue) : defaultValue;
-    }
-
-    private double getConfigDouble(String path, double defaultValue) {
-        FileConfiguration config = getConfig();
-        return config != null ? config.getDouble(path, defaultValue) : defaultValue;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
@@ -98,8 +83,7 @@ public class DraconicoT1 implements PergaminoHandler {
         fireball.setShooter(player);
         fireball.setDirection(direction.multiply(initialSpeed));
         fireball.setYield((float) explosionPower);
-        fireball.setIsIncendiary(false);
-
+        fireball.setIsIncendiary(false); // No crea fuego
         fireball.setMetadata("damage", new FixedMetadataValue(plugin, damage));
 
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
@@ -110,6 +94,14 @@ public class DraconicoT1 implements PergaminoHandler {
             velocity.setY(velocity.getY() - gravityForce);
             fireball.setVelocity(velocity);
         }, 1L, 1L);
+    }
+
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent event) {
+        if (event.getEntity() instanceof Fireball && event.getEntity().hasMetadata("damage")) {
+            plugin.getLogger().info("[DEBUG] Evitando daño a bloques por explosión de Fireball.");
+            event.blockList().clear(); // Evita que los bloques sean destruidos
+        }
     }
 
     private boolean isInCooldown(Player player) {
@@ -127,6 +119,24 @@ public class DraconicoT1 implements PergaminoHandler {
         long lastUse = player.getMetadata("Draconico_cooldown").get(0).asLong();
         long cooldownTime = getConfigInt("Pergaminos.Draconico.Tier1.cooldown", 5) * 1000;
         return (cooldownTime - (System.currentTimeMillis() - lastUse)) / 1000;
+    }
+
+    private int getConfigInt(String path, int defaultValue) {
+        FileConfiguration config = getConfig();
+        return config != null ? config.getInt(path, defaultValue) : defaultValue;
+    }
+
+    private double getConfigDouble(String path, double defaultValue) {
+        FileConfiguration config = getConfig();
+        return config != null ? config.getDouble(path, defaultValue) : defaultValue;
+    }
+
+    private FileConfiguration getConfig() {
+        File file = new File(plugin.getDataFolder(), "Pergaminos.yml");
+        if (!file.exists()) {
+            plugin.getLogger().warning("No se encontró el archivo Pergaminos.yml.");
+        }
+        return YamlConfiguration.loadConfiguration(file);
     }
 
     private void sendActionBar(Player player, String message) {

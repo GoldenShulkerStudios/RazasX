@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import me.ewahv1.plugin.Utils.RazaManager;
 
@@ -32,7 +33,6 @@ public class CarmesiT1 implements PergaminoHandler {
     public void onUse(Player player, ItemStack item) {
         plugin.getLogger().info("[DEBUG] Intentando activar el pergamino Carmesí T1 para " + player.getName());
 
-        // Lógica del pergamino (sin cambios)
         if (!isPlayerOfRace(player)) {
             sendActionBar(player, ChatColor.RED + "Este pergamino solo puede ser usado por la raza Carmesí.");
             plugin.getLogger().info("[DEBUG] El jugador " + player.getName() + " no pertenece a la raza Carmesí.");
@@ -139,11 +139,13 @@ public class CarmesiT1 implements PergaminoHandler {
     }
 
     private Entity getTargetEntity(Player player, int range) {
-        return player.getNearbyEntities(range, range, range).stream()
-                .filter(e -> e instanceof LivingEntity && player.hasLineOfSight(e))
-                .min((e1, e2) -> Double.compare(player.getLocation().distanceSquared(e1.getLocation()),
-                        player.getLocation().distanceSquared(e2.getLocation())))
-                .orElse(null);
+        RayTraceResult rayTraceResult = player.getWorld().rayTraceEntities(
+                player.getEyeLocation(),
+                player.getEyeLocation().getDirection(),
+                range,
+                entity -> entity instanceof LivingEntity && !entity.equals(player));
+
+        return rayTraceResult != null ? rayTraceResult.getHitEntity() : null;
     }
 
     private boolean isPlayerOfRace(Player player) {

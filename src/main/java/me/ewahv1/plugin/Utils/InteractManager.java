@@ -27,6 +27,7 @@ public class InteractManager implements Listener {
         pergaminoHandlers.put("Draconico", new DraconicoT1(plugin));
         pergaminoHandlers.put("Elfo", new ElfoT1(plugin));
         pergaminoHandlers.put("Humano", new HumanoT1(plugin));
+        pergaminoHandlers.put("Leviathan", new LeviathanT1(plugin));
         // Añadir más razas según sea necesario
     }
 
