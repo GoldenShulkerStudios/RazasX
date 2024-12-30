@@ -34,7 +34,7 @@ public class AtributosRazaHumano implements Listener {
 
         Player player = (Player) event.getEntity();
 
-        // Verificar si la raza del jugador es "Carmesi"
+        // Verificar si la raza del jugador es "Humano"
         String raza = razaManager.obtenerRaza(player);
         if (raza == null || !raza.equalsIgnoreCase("Humano")) {
             return;
@@ -45,15 +45,16 @@ public class AtributosRazaHumano implements Listener {
     }
 
     /**
-     * Lógica específica para la raza Humanos.
+     * Lógica específica para la raza Humano.
      *
      * @param event  El evento de daño.
      * @param player El jugador que recibió el daño.
      */
     private void procesarDañoHumano(EntityDamageEvent event, Player player) {
-        // Ejemplo básico: log de depuración sin aplicar modificaciones al daño
+        // Sin resistencias ni debilidades: Log de depuración
         Bukkit.getLogger()
-                .info("[DEBUG] Procesando daño para " + player.getName() + " (Humano). Causa: " + event.getCause());
-        // Puedes agregar lógica personalizada aquí si lo deseas en el futuro
+                .info("[DEBUG] Procesando daño para " + player.getName() + " (Humano). Causa: " + event.getCause()
+                        + ", Daño: " + event.getDamage());
+        // No se realizan cambios al daño
     }
 }

@@ -7,8 +7,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 public class AtributosRazaCarmesi implements Listener {
@@ -57,12 +58,7 @@ public class AtributosRazaCarmesi implements Listener {
         Bukkit.getLogger().info("[DEBUG] El jugador " + player.getName() + " (Carmesi) recibió daño: " + cause
                 + ", cantidad: " + originalDamage);
 
-        // Resistencia al veneno
-        if (cause == EntityDamageEvent.DamageCause.POISON) {
-            double reducedDamage = originalDamage * 0.75; // 25% menos de daño
-            event.setDamage(reducedDamage);
-            Bukkit.getLogger().info("[DEBUG] Daño reducido por resistencia al veneno: " + reducedDamage);
-        }
+        // Resistencia: no se aplica ninguna resistencia
     }
 
     @EventHandler
@@ -79,15 +75,30 @@ public class AtributosRazaCarmesi implements Listener {
             return;
         }
 
-        // Verificar si el daño proviene de una espada de madera
+        // Verificar si el daño proviene de cualquier herramienta de madera
         if (event.getDamager() instanceof Player) {
             Player damager = (Player) event.getDamager();
-            if (damager.getInventory().getItemInMainHand().getType() == Material.WOODEN_SWORD) {
+            ItemStack weapon = damager.getInventory().getItemInMainHand();
+            if (isWoodenTool(weapon.getType())) {
                 double originalDamage = event.getDamage();
                 double increasedDamage = originalDamage * 1.25; // 25% más de daño
                 event.setDamage(increasedDamage);
-                Bukkit.getLogger().info("[DEBUG] Daño aumentado por espada de madera: " + increasedDamage);
+                Bukkit.getLogger().info("[DEBUG] Daño aumentado por herramienta de madera: " + increasedDamage);
             }
         }
+    }
+
+    /**
+     * Verifica si el material es una herramienta de madera.
+     *
+     * @param material El material a verificar.
+     * @return true si es una herramienta de madera, false en caso contrario.
+     */
+    private boolean isWoodenTool(Material material) {
+        return material == Material.WOODEN_SWORD
+                || material == Material.WOODEN_AXE
+                || material == Material.WOODEN_PICKAXE
+                || material == Material.WOODEN_SHOVEL
+                || material == Material.WOODEN_HOE;
     }
 }

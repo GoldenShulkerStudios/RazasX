@@ -2,7 +2,6 @@ package me.ewahv1.plugin.Listeners.Atributos;
 
 import me.ewahv1.plugin.Utils.DamageManager;
 import me.ewahv1.plugin.Utils.RazaManager;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,7 +19,7 @@ public class AtributosRazaElfo implements Listener {
         this.razaManager = new RazaManager(plugin);
 
         // Registrar la lógica específica de manejo de daño para Elfo
-        damageManager.registrarHandler("Elfo", this::procesarResistenciasYDebilidades); // Usar minúsculas
+        damageManager.registrarHandler("Elfo", this::procesarResistenciasYDebilidades);
         Bukkit.getLogger().info("[DEBUG] Registrado manejador de daño para la raza: Elfo");
     }
 
@@ -33,7 +32,7 @@ public class AtributosRazaElfo implements Listener {
 
         Player player = (Player) event.getEntity();
 
-        // Verificar si la raza del jugador es "Carmesi"
+        // Verificar si la raza del jugador es "Elfo"
         String raza = razaManager.obtenerRaza(player);
         if (raza == null || !raza.equalsIgnoreCase("Elfo")) {
             return;
@@ -47,20 +46,21 @@ public class AtributosRazaElfo implements Listener {
         EntityDamageEvent.DamageCause cause = event.getCause();
         double originalDamage = event.getDamage();
 
-        // Resistencia a flechas (PROJECTILE)
+        // Resistencia: Daño por proyectiles (25% menos de daño)
         if (cause == EntityDamageEvent.DamageCause.PROJECTILE) {
-            double reducedDamage = originalDamage * 0.75;
+            double reducedDamage = originalDamage * 0.75; // Reduce el daño un 25%
             event.setDamage(reducedDamage);
-            Bukkit.getLogger()
-                    .info(player.getName() + " (Elfo) recibió daño reducido por PROJECTILE: " + reducedDamage);
+            Bukkit.getLogger().info(
+                    player.getName() + " (Elfo) recibió daño reducido por PROJECTILE. Nuevo daño: " + reducedDamage);
             return;
         }
 
-        // Debilidad al veneno (POISON)
+        // Debilidad: Daño por veneno (25% más de daño)
         if (cause == EntityDamageEvent.DamageCause.POISON) {
-            double increasedDamage = originalDamage * 1.25;
+            double increasedDamage = originalDamage * 1.25; // Aumenta el daño un 25%
             event.setDamage(increasedDamage);
-            Bukkit.getLogger().info(player.getName() + " (Elfo) recibió daño aumentado por POISON: " + increasedDamage);
+            Bukkit.getLogger().info(
+                    player.getName() + " (Elfo) recibió daño aumentado por POISON. Nuevo daño: " + increasedDamage);
         }
     }
 }

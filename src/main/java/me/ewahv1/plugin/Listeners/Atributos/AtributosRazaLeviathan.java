@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
@@ -66,7 +67,7 @@ public class AtributosRazaLeviathan implements Listener {
 
         Player player = (Player) event.getEntity();
 
-        // Verificar si la raza del jugador es "Carmesi"
+        // Verificar si la raza del jugador es "Leviathan"
         String raza = razaManager.obtenerRaza(player);
         if (raza == null || !raza.equalsIgnoreCase("Leviathan")) {
             return;
@@ -74,6 +75,30 @@ public class AtributosRazaLeviathan implements Listener {
 
         // Delegar la gestión del daño al DamageManager
         damageManager.manejarDaño(event);
+    }
+
+    @EventHandler
+    public void onPlayerDamageByEntity(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+
+        // Verificar si la raza del jugador es "Leviathan"
+        String raza = razaManager.obtenerRaza(player);
+        if (raza == null || !raza.equalsIgnoreCase("Leviathan")) {
+            return;
+        }
+
+        // Verificar si el daño proviene de un tridente
+        if (event.getDamager() instanceof org.bukkit.entity.Trident) {
+            double originalDamage = event.getDamage();
+            double reducedDamage = originalDamage * 0.75; // 25% menos de daño
+            event.setDamage(reducedDamage);
+            Bukkit.getLogger()
+                    .info(player.getName() + " (Leviathan) resistió daño de tridente. Nuevo daño: " + reducedDamage);
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -108,33 +109,48 @@ public class ElfoT1 implements PergaminoHandler, Listener {
     }
 
     @EventHandler
-    public void onProjectileHit(ProjectileHitEvent event) {
-        Entity projectile = event.getEntity();
-
-        if (projectile instanceof Projectile proj) { // Casting seguro
-            ProjectileSource source = proj.getShooter();
-
-            if (source instanceof Player player && player.hasMetadata("ElfoT1_active")) {
-                FileConfiguration config = getConfig();
-                int slowDuration = config.getInt("Pergaminos.Elfo.Tier1.duration_slow_target", 5) * 20;
-
-                if (event.getHitEntity() instanceof LivingEntity target) {
-                    double baseDamage = proj.getMetadata("damage").stream()
-                            .mapToDouble(meta -> meta.asDouble())
-                            .findFirst()
-                            .orElse(1.0); // Valor predeterminado si no hay metadata
-
-                    double newDamage = baseDamage * 2.0; // Duplicar el daño
-                    target.damage(newDamage);
-
-                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, slowDuration, 1));
-                    plugin.getLogger().info("[DEBUG] Proyectil impactó:");
-                    plugin.getLogger().info("[DEBUG] Objetivo: " + target.getName());
-                    plugin.getLogger().info("[DEBUG] Daño base: " + baseDamage);
-                    plugin.getLogger().info("[DEBUG] Nuevo daño con x2: " + newDamage);
-                }
-            }
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        // Verificar que el daño proviene de un proyectil
+        if (!(event.getDamager() instanceof Projectile)) {
+            return;
         }
+
+        Projectile proj = (Projectile) event.getDamager();
+        ProjectileSource source = proj.getShooter();
+
+        // Verificar que el proyectil fue lanzado por un jugador
+        if (!(source instanceof Player player)) {
+            return;
+        }
+
+        // Verificar que el jugador tiene activo el pergamino ElfoT1
+        if (!player.hasMetadata("ElfoT1_active")) {
+            return;
+        }
+
+        // Verificar que el objetivo es una entidad viva
+        if (!(event.getEntity() instanceof LivingEntity target)) {
+            return;
+        }
+
+        FileConfiguration config = getConfig();
+        int slowDuration = config.getInt("Pergaminos.Elfo.Tier1.duration_slow_target", 5) * 20;
+
+        // Obtener el daño original del evento
+        double baseDamage = event.getDamage();
+
+        // Duplicar el daño
+        double newDamage = baseDamage * 2.0;
+        event.setDamage(newDamage);
+
+        // Aplicar efecto de lentitud al objetivo
+        target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, slowDuration, 1));
+
+        // Registrar información en los logs
+        plugin.getLogger().info("[DEBUG] Proyectil impactó:");
+        plugin.getLogger().info("[DEBUG] Objetivo: " + target.getName());
+        plugin.getLogger().info("[DEBUG] Daño base: " + baseDamage);
+        plugin.getLogger().info("[DEBUG] Nuevo daño con x2: " + newDamage);
     }
 
     private boolean isInCooldown(Player player) {

@@ -32,7 +32,7 @@ Pergaminos:
       initial_speed: 2.0 # Velocidad inicial
       gravity_force: 0.2 # Gravedad personalizada
       damage: 10.0 # Daño directo
-      power_explosión: 4.0 # Potencia de la explosión
+      power_explosión: 5.0 # Potencia de la explosión
 
   Elfo:
     Tier1:
